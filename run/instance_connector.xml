@@ -1,0 +1,3 @@
+<configurations>
+<general port="8123" protocol="http-rest"/>
+</configurations>

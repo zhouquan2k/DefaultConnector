@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application name="app.cti.DefaultConnector" runMode="SingleInstance">
+	<failover>MultiInstances</failover>
+	<!--defaultMonitorPort>50002</defaultMonitorPort-->
+	<!--defaultStartOptions>-Xss512k</defaultStartOptions-->
+	<remoteInterfaces>
+		<!--interface name="app.ctiServer.CtiAction" bean="CtiAction" type="Action"/-->
+	</remoteInterfaces>
+	<configurations>
+		<serviceConfigurations>
+			<section name="general" desc="General Settings">				
+				<property name="protocol" type="Select" default="udp-cclink">
+					<option desc="socket/json" value="socket-json"/>
+					<option desc="http/rest" value="http-rest"/>
+					<option desc="udp/soft" value="udp-cclink" />
+				</property>
+				<property name="port" type="Integer" default="8123"/>
+				<property name="context" type="String" default="/connector"/> 
+			</section> 
+			<section name="CCLinkConnector" desc="CCLink Connector setting">
+				<property name="AgentWorkMode" type="Select" default="Auto_In">
+					<option value="Auto_In"/>
+					<option value="Manual_In"/>
+				</property>
+			</section>
+		</serviceConfigurations>
+	</configurations>
+	<dependencies>
+		<dependency id="cti" depends="app.cti.CtiServer" required="false"/>
+		<dependency id="RTStat" depends="app.cti.RealtimeStat" required="false"/>
+		<dependency id="res" depends="app.CCAdmin" required="false"/>
+	</dependencies>
+	<monitors>
+		<!--monitor ui="app.ctiServer.sessions" desc="sessions"/-->
+	</monitors>	
+	<javascripts>
+		<!--javascript name="app/ctiServer/ui/ctiServer.js"/-->
+	</javascripts>
+	<namedEvents>
+		<event name="SessionInvalid" desc="Session已经失效:$(sessionId)" action="请重新初始化session" />
+	</namedEvents>	
+</application>

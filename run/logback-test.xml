@@ -1,0 +1,135 @@
+<configuration scan="true" scanPeriod="30 seconds" >
+  <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{dd/HH:mm:ss.SSS} %-5level\(%15.-15logger{0}-%-10.-10thread\) - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="trace" class="ch.qos.logback.core.FileAppender">
+    <file>logs/trace.log</file>
+    <append>false</append>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <maxHistory>72</maxHistory>
+      <fileNamePattern>logs/trace_%d{yyyy-MM-dd-HH}.%i.log.zip</fileNamePattern>
+      <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+        <maxFileSize>10MB</maxFileSize>
+      </timeBasedFileNamingAndTriggeringPolicy>
+    </rollingPolicy>
+    <encoder>
+	  <pattern>%d{dd/HH:mm:ss.SSS} %-5level\(%20.-20logger{0}-%-10.-10thread\) - %msg%n</pattern>    
+    </encoder>
+  </appender>
+  <appender name="event" class="component.util.impl.MyLogbackRollingFileAppender">
+    <File>logs/event.log</File>
+    <encoder>
+      <pattern>%d{dd/HH:mm:ss.SSS} %-5level\(%15.-15logger{0}-%-10.-10thread\) - %msg%n</pattern>
+    </encoder>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>INFO</level>
+    </filter>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>logs/event.log.%d{yyyy-MM-dd}</fileNamePattern>
+	  <maxHistory>30</maxHistory>
+    </rollingPolicy>
+  </appender>
+  <appender name="performance" class="component.util.impl.MyLogbackRollingFileAppender">
+    <file>logs/perf.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <maxHistory>10</maxHistory>
+      <fileNamePattern>logs/perf_%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
+      <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+        <maxFileSize>20480KB</maxFileSize>
+      </timeBasedFileNamingAndTriggeringPolicy>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%d{dd/HH:mm:ss.SSS} %-5level\(%15.-15logger{0}-%-10.-10thread\) - %msg%n</pattern>
+    </encoder>
+  </appender>
+   <appender name="rmi" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/rmi.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <maxHistory>10</maxHistory>
+      <fileNamePattern>logs/rmi_%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
+      <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+        <maxFileSize>20480KB</maxFileSize>
+      </timeBasedFileNamingAndTriggeringPolicy>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%d{dd/HH:mm:ss.SSS} %-5level\(%15.-15logger{0}-%-10.-10thread\) - %msg%n</pattern>
+    </encoder>
+  </appender>
+  <!--appender name="Status" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <File>logs/status.log</File>
+    <encoder>
+      <pattern>%d{dd/HH:mm:ss.SSS} %-5level\(%15.-15logger{0}-%-10.-10thread\) - %msg%n</pattern>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+      <maxIndex>5</maxIndex>
+      <FileNamePattern>logs/status_%i.log</FileNamePattern>
+    </rollingPolicy>
+    <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+      <MaxFileSize>5120KB</MaxFileSize>
+    </triggeringPolicy>
+  </appender-->
+  <appender name="Error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!--See http://logback.qos.ch/manual/appenders.html#RollingFileAppender-->
+    <!--and http://logback.qos.ch/manual/appenders.html#TimeBasedRollingPolicy-->
+    <!--for further documentation-->
+    <File>logs/error.log</File>
+    <encoder>
+      <pattern>%d{dd/HH:mm:ss.SSS} %-5level\(%30c{0}-%-20thread\) - %msg%n</pattern>
+    </encoder>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>WARN</level>
+    </filter>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>logs/error.log.%d{yyyy-MM-dd}</fileNamePattern>
+	  <maxHistory>30</maxHistory>
+    </rollingPolicy>
+  </appender>
+  <appender name="stderr" class="ch.qos.logback.core.ConsoleAppender">
+    <Target>System.err</Target>
+    <encoder>
+      <pattern>%-5level\(%20c{0}-%-10thread\) - %msg%n</pattern>
+    </encoder>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>WARN</level>
+    </filter>
+  </appender>
+  
+  
+
+  <root level="WARN">
+    <appender-ref ref="trace"/>
+    <appender-ref ref="event"/>
+    <appender-ref ref="stderr"/>
+    
+    <appender-ref ref="stdout"/>
+  </root>
+  
+  <logger name="app" level="DEBUG"/>
+  <logger name="component" level="DEBUG"/>
+  <logger name="com.wilcom" level="DEBUG"/>
+  <logger name="test" level="DEBUG"/>
+  <logger name="audit" level="DEBUG"/>
+  <logger name="rmi" level="DEBUG">
+  	<appender-ref ref="rmi"/>
+  </logger>
+  <logger name="Default" level="DEBUG"/>
+  
+  <logger name="perf" level="DEBUG" additivity="false">
+    <appender-ref ref="performance"/>
+  </logger>
+  <logger name="Errors" level="ERROR">
+    <appender-ref ref="event"/>
+  </logger>
+  
+  <logger name="org.springframework.orm.jpa" level="WARN"/>
+  <logger name="org.hibernate" level="WARN"/>
+  <logger name="org.springframework" level="INFO"/>
+  <logger name="component.web.impl.WebClient" level="INFO"/>
+  <logger name="component.web.impl.WebEventDispatcher" level="INFO"/>
+  <logger name="component.web.impl.EventRepository" level="INFO"/>
+  <logger name="com.opensymphony.xwork2.ognl.OgnlValueStack" level="ERROR"/>
+  <logger name="app.dcmp.server.impl.ConfigStorageXmlFile" level="INFO"/>
+</configuration>

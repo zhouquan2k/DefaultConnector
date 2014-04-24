@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd"
+     default-lazy-init="true">
+    
+    <bean class="org.springframework.context.annotation.CommonAnnotationBeanPostProcessor"/>
+    <bean id="XmlPlaceholderConfigurer2" class="component.spring.XmlPlaceholderConfigurer" lazy-init="false" depends-on="init_BeanFactory">
+   		<property name="preference" ref="component.service.PreferenceSource"/>
+	</bean>
+	
+    <bean id="component.service.impl.Configurer" class="component.service.impl.Configurer">
+	<property name="destObjects">
+		<list>
+			<ref bean="app.ctiServer.connector.ConnectorServer"/>			
+		</list>
+	</property>
+	<property name="source" ref="component.service.PreferenceSource"/>
+	</bean>
+	
+	
+	
+     
+	<!-- Application Configuration -->
+	<alias name="app.ctiServer.connector.ConnectorServer" alias="service"/>
+	
+	<bean id="app.ctiServer.connector.ConnectorMgr" class="app.ctiServer.connector.ConnectorMgr" init-method="init">
+		<property name="protocol" ref="protocol"/>
+		<property name="connectors">
+			<list>
+				<bean class="app.ctiServer.connector.ResourceConnector"/>
+				<bean class="app.ctiServer.connector.CTIConnector"/>
+				<bean class="app.ctiServer.connector.RTStatConnector"/>			
+			</list>
+		</property>
+	</bean>
+	
+	
+	<bean id="init1" class="java.lang.Object" depends-on="ConnectorActionScaner"/>
+	
+	
+	<bean id="component.util.Timer" class="component.util.Timer">
+		<constructor-arg value="default-timer"/>
+	</bean>
+	
+	<alias name="protocol-${general.protocol}" alias="protocol"/>
+	
+	<bean id="app.ctiServer.connector.ConnectorServer" class="app.ctiServer.connector.ConnectorServer">
+		<property name="connectorMgr" ref="app.ctiServer.connector.ConnectorMgr"/>
+	</bean>
+	
+	<bean id="protocol-socket-json" class="app.ctiServer.connector.protocol.socket.ProtocolMgr" init-method="init">
+		<property name="port" value="${general.port}"/>
+		<property name="methodRepository" ref="app.ctiServer.connector.ConnectorMgr"/>
+	</bean>
+	
+	<import resource="classpath:/security.xml"/>
+	<import resource="classpath:/component/web/spring.xml"/>
+	<bean id="protocol-http-rest" class="app.ctiServer.connector.protocol.http.HttpProtocolMgr" init-method="init">
+		<property name="port" value="${general.port}"/>
+		<property name="methodRepository" ref="app.ctiServer.connector.ConnectorMgr"/>
+		<property name="connectorActionScaner" ref="ConnectorActionScaner"/>
+	</bean>
+	<bean id="HttpConnectorAction"  class="app.ctiServer.connector.protocol.http.HttpConnectorActionImpl">
+		<property name="protocolMgr" ref="protocol"/>
+	</bean>
+	<bean id="ConnectorActionScaner" class="app.ctiServer.connector.protocol.http.ConnectorActionScaner" init-method="init">
+		<property name="connectorMgr" ref="app.ctiServer.connector.ConnectorMgr"/>
+	</bean>
+	
+	<bean id="protocol-udp-cclink" class="app.ctiServer.connector.protocol.udp.UDPProtocolMgr" init-method="init">
+	     <property name="port" value="${general.port}"/>
+	     <property name="agentWorkMode" value="${CCLinkConnector.AgentWorkMode}"/>
+	     <property name="methodRepository" ref="app.ctiServer.connector.ConnectorMgr"/>
+	 </bean>
+
+</beans>

@@ -1,0 +1,100 @@
+{
+	className:'TestPortlet',
+	extend:'dcmp.Controller',
+	init:function(){
+	
+		global.application.remoting.subscrbEvent(this,["csta", "rtstat"]);		
+	},
+	ui:{
+		id:'agent-grid',
+		xtype:'gridpanel',
+		height:300,
+		border:0,
+		columnLines:true,
+		frame:false,	
+		columns: [
+			{sortable:true,header:'Agent Id',dataIndex:'agentId',width:130},
+			{sortable:true,header:'坐席名称',dataIndex:'userName',width:130},
+			{sortable:true,header:'工作模式',dataIndex:'agentMode',width:130},
+			{sortable:true,header:'坐席状态',dataIndex:'agentStatus',width:130},
+			{sortable:true,header:'分机',dataIndex:'station',width:130},			
+			{sortable:true,header:'分机状态',dataIndex:'stationStatus',width:130,
+				renderer:function(value, metaData, record, rowIndex, colIndex, store){ return value=='Ready'?'-':value;}
+			},
+			{sortable:true,header:'对方号码',dataIndex:'otherSide',width:130}			          	
+		],
+		store: Ext.create( 'Ext.data.DirectStore',{
+				autoLoad:true,
+				autoDestroy:false,
+				directFn: res.queryAllocatedResources,
+				paramsAsHash:true,
+				model:'model.resource.Agent',
+				paramOrder: ['serviceid','resname','restype'],                
+                listeners:{ 
+                	beforeload:function(store, o) {	
+                		store.proxy.extraParams['serviceid'] = 'cti_service';
+                		store.proxy.extraParams['resname'] = 'Agent';
+                		store.proxy.extraParams['restype'] = 'Agent';
+					},
+					load:function(store){
+						var agents=[];
+						var agentStr='';
+						for (var i=0;i<store.count();i++)
+						{
+							var agentId=store.getAt(i).getId();
+							agents.push(agentId);
+							agentStr+=agentId;
+							if (i<store.count()-1) agentStr+=',';
+						}
+						//cti.monitorAgent(agents);
+						RTStat.defineSubscription({name:'all-agents',items:[{pattern:'agentDefault',subjects:agentStr}]});
+						RTStat.subscribe('all-agents',0);	
+					}
+					
+				}			
+			}),		
+	},
+	calcOtherSide:function(call,deviceId)
+	{
+		if (!call) return '';
+		if (call.callType=='Inbound')
+			return call.ani;
+		else if (call.callType=='Outbound')
+			return call.dnis;
+		else			
+			return deviceId==call.ani?call.dnis:call.ani;
+	},
+	onEvent:function(event){
+    	var store=Ext.getCmp('agent-grid').getStore();
+    	
+    	
+  		if (arrayContains(event.topics,"call"))
+  		{
+  			var device=event.eventSrc;
+  			var agent=device.agent;
+  			var agentId=agent.agentId;
+  			var r=store.getById(agentId);
+  			
+  			r.set('agentStatus',agent.agentStatus);
+  			r.set('agentMode',agent.agentMode);
+  			r.set('station',device.deviceId);
+  			r.set('stationStatus',device.status);
+  			r.set('otherSide',this.calcOtherSide(device.call,device.deviceId));
+  		}
+  		else if (arrayContains(event.topics,"agent"))
+  		{
+  			var agentId=event.agentId;
+  			var device=event.eventSrc;
+  			var r=store.getById(agentId);
+  			
+  			r.set('agentMode',event.agentMode);
+  			r.set('agentStatus',device.agentStatus);
+  			r.set('station',device.deviceId);
+  			r.set('stationStatus',device.status);
+  			r.set('otherSide',this.calcOtherSide(event.call,device.deviceId));
+  		}
+  		else if (arrayContains(event.topics,"rtstat"))
+  		{
+  		}
+	}
+}
